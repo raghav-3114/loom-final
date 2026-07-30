@@ -1,0 +1,17 @@
+{
+  "name": "loom-ai",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "apps/server"
+  ],
+  "scripts": {
+    "dev:web": "npm --prefix apps/web run dev",
+    "dev:server": "npm --prefix apps/server run dev",
+    "dev": "concurrently \"npm run dev:web\" \"npm run dev:server\""
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.62.0",
+    "concurrently": "^8.2.2"
+  }
+}
