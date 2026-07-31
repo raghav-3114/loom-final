@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import PreviewToolbar from '../ui/PreviewToolbar';
-import VanillaPreview from './VanillaPreview';
+import VanillaPreview, { createVanillaPreviewDocument } from './VanillaPreview';
 import ReactTailwindPreview from './ReactTailwindPreview';
 import ProjectTree from './ProjectTree';
 import Tabs from '../ui/Tabs';
@@ -69,6 +69,20 @@ export function PreviewPane() {
     }
   };
 
+  const openFullPreview = () => {
+    if (activeStack !== 'vanilla') {
+      toggleFullscreen();
+      return;
+    }
+
+    const previewWindow = window.open('', '_blank');
+    if (!previewWindow) return;
+
+    previewWindow.document.write('<!doctype html><title>Loom Preview</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0}</style><iframe sandbox="allow-scripts" title="Loom Preview"></iframe>');
+    previewWindow.document.close();
+    previewWindow.document.querySelector('iframe').srcdoc = createVanillaPreviewDocument(files);
+  };
+
   useEffect(() => {
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement) setIsFullscreen(false);
@@ -90,6 +104,7 @@ export function PreviewPane() {
         onRefresh={() => setRefreshKey((k) => k + 1)}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
+        onOpenFullPreview={openFullPreview}
       />
 
       {/* View Tabs bar */}

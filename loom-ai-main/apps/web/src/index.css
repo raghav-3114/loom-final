@@ -39,6 +39,14 @@
   .hide-default-cursor * {
     cursor: none !important;
   }
+
+  /* Text controls need the browser caret/I-beam rather than the decorative
+     application cursor so selection and keyboard editing remain usable. */
+  .hide-default-cursor input,
+  .hide-default-cursor textarea,
+  .hide-default-cursor [contenteditable="true"] {
+    cursor: text !important;
+  }
   
   /* Grain Overlay */
   body::before {

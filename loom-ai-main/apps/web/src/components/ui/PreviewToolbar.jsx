@@ -6,7 +6,7 @@ import { useProject } from '../../contexts/ProjectContext';
 import { useUI } from '../../contexts/UIContext';
 import { useChat } from '../../contexts/ChatContext';
 
-export function PreviewToolbar({ onRefresh, isFullscreen = false, onToggleFullscreen }) {
+export function PreviewToolbar({ onRefresh, isFullscreen = false, onToggleFullscreen, onOpenFullPreview }) {
   const { activeStack } = useProject();
   const { showToast } = useUI();
   const { activeProjectId } = useChat();
@@ -81,7 +81,7 @@ export function PreviewToolbar({ onRefresh, isFullscreen = false, onToggleFullsc
         </button>
 
         <button
-          onClick={() => showToast('Opening preview in external window...', 'info')}
+          onClick={onOpenFullPreview}
           className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-white/5 rounded-xl transition-colors"
           title="Open in new window"
           aria-label="Open in new window"

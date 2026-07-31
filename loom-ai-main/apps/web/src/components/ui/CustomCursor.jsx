@@ -11,6 +11,7 @@ const CustomCursor = () => {
   
   const [isVisible, setIsVisible] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  const [isEditingText, setIsEditingText] = useState(false);
 
   useEffect(() => {
     // Check if it's a touch device, if so, don't show the custom cursor
@@ -26,6 +27,8 @@ const CustomCursor = () => {
     const handleMouseOver = (e) => {
       // Check if hovering over clickable elements
       const target = e.target;
+      const isTextControl = target.closest('input, textarea, [contenteditable="true"]');
+      setIsEditingText(Boolean(isTextControl));
       if (
         target.tagName.toLowerCase() === 'button' ||
         target.tagName.toLowerCase() === 'a' ||
@@ -75,7 +78,7 @@ const CustomCursor = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[99999] overflow-hidden">
+    <div className={`pointer-events-none fixed inset-0 z-[99999] overflow-hidden ${isEditingText ? 'opacity-0' : ''}`}>
       {/* Background glow trail */}
       <div
         ref={trailingCursorRef}
