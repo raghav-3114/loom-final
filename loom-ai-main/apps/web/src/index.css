@@ -47,7 +47,7 @@
   .hide-default-cursor [contenteditable="true"] {
     cursor: text !important;
   }
-  
+
   /* Grain Overlay */
   body::before {
     content: "";
@@ -160,4 +160,28 @@
 
 .animate-pulse-slow {
   animation: pulseSlow 8s ease-in-out infinite;
+}
+
+/* Short-lived rings give the cursor trail motion without intercepting clicks. */
+.custom-cursor-ripple {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(165, 180, 252, 0.72);
+  border-radius: 9999px;
+  box-shadow: 0 0 16px rgba(99, 102, 241, 0.5);
+  transform: translate(-50%, -50%);
+  animation: cursorRipple 560ms ease-out forwards;
+  will-change: transform, opacity;
+}
+
+@keyframes cursorRipple {
+  from {
+    opacity: 0.52;
+    transform: translate(-50%, -50%) scale(0.35);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.5);
+  }
 }

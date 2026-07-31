@@ -1,13 +1,19 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 const CustomCursor = () => {
+  // The SVG arrow's visible tip is at (6, 4), not at its top-left corner.
+  // Keep that tip on the real browser mouse hotspot so hover/click targets
+  // never appear to push the custom cursor away.
+  const CURSOR_HOTSPOT = { x: 6, y: 4 };
   const mainCursorRef = useRef(null);
   const trailingCursorRef = useRef(null);
+  const rippleLayerRef = useRef(null);
   
   // Track actual mouse position
   const mousePos = useRef({ x: 0, y: 0 });
   // Track trailing position
   const trailingPos = useRef({ x: 0, y: 0 });
+  const lastRippleAt = useRef(0);
   
   const [isVisible, setIsVisible] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
@@ -22,6 +28,18 @@ const CustomCursor = () => {
 
     const handleMouseMove = (e) => {
       mousePos.current = { x: e.clientX, y: e.clientY };
+
+      // Keep the effect inexpensive: a short-lived ripple at most every 80ms.
+      const now = performance.now();
+      if (now - lastRippleAt.current < 80 || !rippleLayerRef.current) return;
+      lastRippleAt.current = now;
+
+      const ripple = document.createElement('span');
+      ripple.className = 'custom-cursor-ripple';
+      ripple.style.left = `${e.clientX}px`;
+      ripple.style.top = `${e.clientY}px`;
+      ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+      rippleLayerRef.current.appendChild(ripple);
     };
 
     const handleMouseOver = (e) => {
@@ -51,7 +69,7 @@ const CustomCursor = () => {
     const animate = () => {
       // Main cursor moves instantly
       if (mainCursorRef.current) {
-        mainCursorRef.current.style.transform = `translate3d(${mousePos.current.x}px, ${mousePos.current.y}px, 0)`;
+        mainCursorRef.current.style.transform = `translate3d(${mousePos.current.x - CURSOR_HOTSPOT.x}px, ${mousePos.current.y - CURSOR_HOTSPOT.y}px, 0)`;
       }
 
       // Trailing cursor lerps (linear interpolation) to the target position
@@ -79,11 +97,12 @@ const CustomCursor = () => {
 
   return (
     <div className={`pointer-events-none fixed inset-0 z-[99999] overflow-hidden ${isEditingText ? 'opacity-0' : ''}`}>
+      <div ref={rippleLayerRef} className="absolute inset-0" aria-hidden="true" />
       {/* Background glow trail */}
       <div
         ref={trailingCursorRef}
         className={`absolute left-0 top-0 -ml-6 -mt-6 h-12 w-12 rounded-full bg-indigo-500/30 mix-blend-screen blur-md transition-transform duration-75 ease-out will-change-transform ${
-          isHovering ? 'scale-150 bg-indigo-400/40' : 'scale-100'
+          isHovering ? 'bg-indigo-400/40' : ''
         }`}
       />
       
@@ -91,7 +110,7 @@ const CustomCursor = () => {
       <div
         ref={mainCursorRef}
         className={`absolute left-0 top-0 will-change-transform ${
-          isHovering ? 'scale-90 text-indigo-300' : 'scale-100 text-white'
+          isHovering ? 'text-indigo-300' : 'text-white'
         }`}
       >
         <svg
