@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Cookie&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @import "tailwindcss";
@@ -11,28 +12,114 @@
 }
 
 @layer base {
+  /* Default — theme-dark (Slate-950, white borders, indigo/violet/blue) */
   :root {
-    --bg-dark: #030303;
-    --bg-card: rgba(10, 10, 10, 0.4);
-    --bg-card-hover: rgba(18, 18, 18, 0.6);
-    --border-glass: rgba(255, 255, 255, 0.04);
-    --border-glass-glow: rgba(99, 102, 241, 0.3);
+    --bg-base: #020617;
+    --bg-dark: #020617;
+    --bg-card: rgba(15, 23, 42, 0.55);
+    --bg-card-hover: rgba(30, 41, 59, 0.72);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-glass: rgba(255, 255, 255, 0.06);
+    --border-glass-glow: rgba(99, 102, 241, 0.35);
     --accent-purple: #8b5cf6;
     --accent-blue: #3b82f6;
     --accent-indigo: #6366f1;
-    --text-primary: #ffffff;
-    --text-secondary: #a1a1aa;
-    --text-muted: #52525b;
+    --accent-cyan: #22d3ee;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --gradient-start: #6366f1;
+    --gradient-mid: #8b5cf6;
+    --gradient-end: #3b82f6;
+    --font-handwriting: 'Cookie', cursive;
+  }
+
+  .font-handwriting {
+    font-family: var(--font-handwriting) !important;
+  }
+
+  /* Explicit dark theme class — mirrors :root for clean switching */
+  .theme-dark {
+    --bg-base: #020617;
+    --bg-dark: #020617;
+    --bg-card: rgba(15, 23, 42, 0.55);
+    --bg-card-hover: rgba(30, 41, 59, 0.72);
+    --border-subtle: rgba(255, 255, 255, 0.08);
+    --border-glass: rgba(255, 255, 255, 0.06);
+    --border-glass-glow: rgba(99, 102, 241, 0.35);
+    --accent-purple: #8b5cf6;
+    --accent-blue: #3b82f6;
+    --accent-indigo: #6366f1;
+    --accent-cyan: #22d3ee;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --gradient-start: #6366f1;
+    --gradient-mid: #8b5cf6;
+    --gradient-end: #3b82f6;
+  }
+
+  /* theme-light — soft warm slate, gray borders, light blue/indigo gradients */
+  .theme-light {
+    --bg-base: #dbdee3;
+    --bg-dark: #cbd0d8;
+    --bg-card: rgba(255, 255, 255, 0.75);
+    --bg-card-hover: rgba(255, 255, 255, 0.9);
+    --border-subtle: rgba(15, 23, 42, 0.12);
+    --border-glass: rgba(15, 23, 42, 0.1);
+    --border-glass-glow: rgba(99, 102, 241, 0.2);
+    --accent-purple: #6d28d9;
+    --accent-blue: #1d4ed8;
+    --accent-indigo: #4338ca;
+    --accent-cyan: #0e7490;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    --gradient-start: #4f46e5;
+    --gradient-mid: #6366f1;
+    --gradient-end: #3b82f6;
+  }
+
+  /* theme-midnight — deep obsidian/navy, dark indigo borders, neon violet/cyan */
+  .theme-midnight {
+    --bg-base: #02020f;
+    --bg-dark: #02020f;
+    --bg-card: rgba(8, 8, 32, 0.65);
+    --bg-card-hover: rgba(15, 15, 48, 0.82);
+    --border-subtle: rgba(67, 56, 202, 0.22);
+    --border-glass: rgba(49, 46, 129, 0.35);
+    --border-glass-glow: rgba(139, 92, 246, 0.45);
+    --accent-purple: #a855f7;
+    --accent-blue: #38bdf8;
+    --accent-indigo: #818cf8;
+    --accent-cyan: #22d3ee;
+    --text-primary: #e0e7ff;
+    --text-secondary: #a5b4fc;
+    --text-muted: #6366f1;
+    --gradient-start: #a855f7;
+    --gradient-mid: #22d3ee;
+    --gradient-end: #6366f1;
+  }
+
+  html {
+    background-color: var(--bg-base);
+    color: var(--text-primary);
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease;
   }
 
   body {
-    background-color: var(--bg-dark);
+    background-color: var(--bg-base);
     color: var(--text-primary);
-    font-family: 'Manrope', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
     overflow-x: hidden;
     margin: 0;
     padding: 0;
     -webkit-font-smoothing: antialiased;
+    transition:
+      background-color 0.35s ease,
+      color 0.35s ease;
   }
   
   .hide-default-cursor,
@@ -60,8 +147,8 @@
   }
 
   h1, h2, h3, h4, h5, h6, .font-display {
-    font-family: 'NDot57', 'Plus Jakarta Sans', system-ui, sans-serif;
-    letter-spacing: 0.08em; /* Adjusted tracking for proper spacing so it's not clubbed together */
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    letter-spacing: 0.01em;
   }
 }
 
@@ -184,4 +271,66 @@
     opacity: 0;
     transform: translate(-50%, -50%) scale(2.5);
   }
+}
+
+/* Theme Helper Class Overrides for hardcoded backgrounds and text colors */
+.app-shell {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.sidebar-shell {
+  background-color: rgba(15, 23, 42, 0.4) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+  color: var(--text-primary) !important;
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
+.theme-light .sidebar-shell {
+  background-color: rgba(255, 255, 255, 0.38) !important;
+  border-right: 1px solid rgba(15, 23, 42, 0.08) !important;
+}
+
+.theme-midnight .sidebar-shell {
+  background-color: rgba(2, 2, 15, 0.4) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+.chat-panel-shell {
+  background-color: var(--bg-base) !important;
+  color: var(--text-primary) !important;
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+.modal-shell {
+  background-color: var(--bg-dark) !important;
+  border-color: var(--border-subtle) !important;
+  color: var(--text-primary) !important;
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
+.modal-header-shell {
+  background-color: var(--bg-card) !important;
+  border-bottom-color: var(--border-subtle) !important;
+  transition: background-color 0.35s ease, border-color 0.35s ease;
+}
+
+/* Text & Border variables overrides for general utility */
+.text-primary-theme {
+  color: var(--text-primary) !important;
+}
+
+.text-secondary-theme {
+  color: var(--text-secondary) !important;
+}
+
+.text-muted-theme {
+  color: var(--text-muted) !important;
+}
+
+.border-theme-subtle {
+  border-color: var(--border-subtle) !important;
 }

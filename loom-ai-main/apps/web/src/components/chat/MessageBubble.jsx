@@ -12,17 +12,17 @@ export function MessageBubble({ message, onRegenerate }) {
   const isUser = message.role === 'user';
   
   const borderBgClass = isUser 
-    ? 'bg-slate-900/40 border border-white/5' 
+    ? 'bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-sm' 
     : message.isError 
       ? 'bg-rose-950/30 border border-rose-500/25' 
-      : 'bg-slate-900/80 border border-white/10';
+      : 'bg-[var(--bg-card)] border border-[var(--border-subtle)] shadow-md';
 
   return (
-    <div className={`flex gap-4 p-4 rounded-2xl transition-colors ${borderBgClass}`}>
+    <div className={`flex gap-4 p-4 rounded-2xl transition-all duration-300 ${borderBgClass}`}>
       {/* Avatar */}
       <div className="shrink-0 pt-0.5">
         {isUser ? (
-          <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-300 shadow-md">
+          <div className="w-8 h-8 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-350 shadow-md">
             <User className="w-4 h-4" />
           </div>
         ) : (
@@ -45,7 +45,7 @@ export function MessageBubble({ message, onRegenerate }) {
         {/* Header line */}
         <div className="flex items-center justify-between text-xs text-slate-400">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-slate-200">{isUser ? 'You' : 'LOOM AI'}</span>
+            <span className="font-semibold text-[var(--text-primary)]">{isUser ? 'You' : 'loom AI'}</span>
             {message.stack && (
               <Badge variant={message.stack === 'vanilla' ? 'indigo' : 'purple'}>
                 {message.stack === 'vanilla' ? 'Vanilla HTML/CSS/JS' : 'React + Tailwind'}
@@ -56,7 +56,7 @@ export function MessageBubble({ message, onRegenerate }) {
         </div>
 
         {/* Text Body */}
-        <div className={`text-sm leading-relaxed whitespace-pre-line ${message.isError ? 'text-rose-200/90 font-medium' : 'text-slate-200'}`}>
+        <div className={`text-sm leading-relaxed whitespace-pre-line ${message.isError ? 'text-rose-200/90 font-medium' : 'text-[var(--text-primary)]'}`}>
           {message.content}
         </div>
 
@@ -71,12 +71,12 @@ export function MessageBubble({ message, onRegenerate }) {
 
         {/* Explanation Card */}
         {message.explanationCard && (
-          <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-slate-300 space-y-1">
-            <div className="flex items-center gap-1.5 font-semibold text-indigo-300">
+          <div className="p-3.5 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-xs text-[var(--text-primary)] space-y-1">
+            <div className="flex items-center gap-1.5 font-semibold text-indigo-500 theme-dark:text-indigo-300">
               <Info className="w-4 h-4" />
               <span>{message.explanationCard.title}</span>
             </div>
-            <p className="text-slate-400 leading-relaxed">{message.explanationCard.details}</p>
+            <p className="text-[var(--text-secondary)] leading-relaxed">{message.explanationCard.details}</p>
           </div>
         )}
 

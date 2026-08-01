@@ -1,162 +1,110 @@
 /**
  * @file SettingsModal.jsx
- * @description Settings modal tabbed configuration view for theme, AI provider display (real config),
- * and About Loom information. The AI Providers tab reads live data from the backend provider-manager.
+ * @description Simplified settings modal displaying strictly the Theme options selector.
  */
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import { Monitor } from 'lucide-react';
 import Modal from '../ui/Modal';
-import Tabs from '../ui/Tabs';
-import LoomLogo from '../ui/LoomLogo';
 import { useUI } from '../../contexts/UIContext';
-import { getSettings } from '../../lib/apiClient';
 
-const AGENT_LABELS = {
-  router: 'Router Agent',
-  builder: 'Builder Agent',
-  reviewer: 'Reviewer Agent',
-};
+const THEME_OPTIONS = [
+  {
+    id: 'dark',
+    label: 'Dark',
+    previewClass: 'bg-[#020617]',
+    accentClass: 'bg-gradient-to-br from-indigo-500 via-violet-500 to-blue-500',
+  },
+  {
+    id: 'light',
+    label: 'Light',
+    previewClass: 'bg-[#f8fafc]',
+    accentClass: 'bg-gradient-to-br from-blue-400 via-indigo-400 to-indigo-300',
+  },
+  {
+    id: 'midnight',
+    label: 'Midnight',
+    previewClass: 'bg-[#02020f]',
+    accentClass: 'bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400',
+  },
+  {
+    id: 'system',
+    label: 'System',
+    previewClass: 'bg-gradient-to-r from-[#020617] to-[#f8fafc]',
+    accentClass: 'bg-gradient-to-br from-slate-500 to-indigo-400',
+    isSystem: true,
+  },
+];
 
-const AGENT_DESCRIPTIONS = {
-  router: 'Classifies intent (generate, edit, explain, debug, off_topic) and routes requests.',
-  builder: 'Generates or modifies code files based on the active stack.',
-  reviewer: 'Validates Builder output and triggers a single repair pass if needed.',
-};
-
-const PROVIDER_BADGE_COLORS = {
-  groq: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-  gemini: 'bg-blue-500/20 text-blue-300 border-blue-500/30',
-  openrouter: 'bg-purple-500/20 text-purple-300 border-purple-500/30',
-};
+function ThemePreviewCard({ option, isSelected, onSelect }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(option.id)}
+      className={`group flex flex-col gap-2.5 p-2 rounded-xl transition-all duration-200 text-left ${
+        isSelected
+          ? 'ring-2 ring-indigo-500 ring-offset-2 ring-offset-[var(--bg-dark)]'
+          : 'ring-1 ring-[var(--border-subtle)] hover:ring-[var(--text-muted)]'
+      }`}
+      aria-pressed={isSelected}
+      aria-label={`${option.label} theme`}
+    >
+      <div
+        className={`relative w-full aspect-[4/3] rounded-lg overflow-hidden border border-[var(--border-subtle)] ${option.previewClass}`}
+      >
+        <div className={`absolute bottom-0 left-0 right-0 h-1/3 ${option.accentClass} opacity-90`} />
+        {option.isSystem && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Monitor className="w-5 h-5 text-white/70 theme-light:text-slate-800 drop-shadow-md" />
+          </div>
+        )}
+        <div className="absolute top-2 left-2 w-8 h-1.5 rounded-full bg-white/20 theme-light:bg-black/10" />
+        <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-white/15 theme-light:bg-black/5" />
+      </div>
+      <span
+        className={`text-xs font-semibold text-center w-full ${
+          isSelected ? 'text-indigo-500 theme-dark:text-indigo-400' : 'text-[var(--text-muted)] group-hover:text-[var(--text-primary)]'
+        }`}
+      >
+        {option.label}
+      </span>
+    </button>
+  );
+}
 
 export function SettingsModal() {
-  const { isSettingsModalOpen, setIsSettingsModalOpen } = useUI();
-  const [activeTab, setActiveTab] = useState('general');
-  const [config, setConfig] = useState(null);
-  const [configLoading, setConfigLoading] = useState(false);
-  const [configError, setConfigError] = useState(null);
-
-  const tabs = [
-    { id: 'general', label: 'General & Theme' },
-    { id: 'ai', label: 'AI Providers & Models' },
-    { id: 'about', label: 'About Loom AI' },
-  ];
-
-  // Fetch real config when AI tab is opened
-  useEffect(() => {
-    if (activeTab === 'ai' && isSettingsModalOpen && !config) {
-      setConfigLoading(true);
-      setConfigError(null);
-      getSettings()
-        .then((res) => setConfig(res.data))
-        .catch((err) => setConfigError(err.message || 'Failed to load configuration'))
-        .finally(() => setConfigLoading(false));
-    }
-  }, [activeTab, isSettingsModalOpen]);
+  const { isSettingsModalOpen, setIsSettingsModalOpen, theme, setTheme } = useUI();
 
   return (
     <Modal
       isOpen={isSettingsModalOpen}
       onClose={() => setIsSettingsModalOpen(false)}
       title="Settings"
-      maxWidth="max-w-lg"
+      maxWidth="max-w-2xl"
     >
       <div className="space-y-6">
-        {/* Navigation Tabs */}
-        <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-
-        {/* Tab 1: General */}
-        {activeTab === 'general' && (
-          <div className="space-y-4 text-xs">
-            <div className="p-4 rounded-xl bg-slate-950/60 border border-white/10 flex items-center justify-between">
-              <div>
-                <div className="font-semibold text-slate-200">Theme Mode</div>
-                <div className="text-slate-400">Deep Charcoal Dark Glassmorphism</div>
-              </div>
-              <span className="px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 font-medium border border-indigo-500/30">
-                Dark Only
-              </span>
-            </div>
+        <div>
+          <h3 className="text-base font-semibold text-[var(--text-primary)] mb-1">Theme</h3>
+          <p className="text-sm text-[var(--text-secondary)] mb-5">
+            Choose how Loom AI looks on your device.
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            {THEME_OPTIONS.map((option) => (
+              <ThemePreviewCard
+                key={option.id}
+                option={option}
+                isSelected={theme === option.id}
+                onSelect={setTheme}
+              />
+            ))}
           </div>
-        )}
-
-        {/* Tab 2: AI Settings — real live config */}
-        {activeTab === 'ai' && (
-          <div className="space-y-4">
-            {configLoading && (
-              <div className="text-center py-8 text-slate-400 text-sm">
-                <div className="inline-block w-4 h-4 border-2 border-indigo-500/50 border-t-indigo-400 rounded-full animate-spin mr-2" />
-                Loading configuration...
-              </div>
-            )}
-
-            {configError && (
-              <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs">
-                ⚠ {configError}
-              </div>
-            )}
-
-            {config && !configLoading && (
-              <div className="space-y-3">
-                <p className="text-xs text-slate-500 pb-1">
-                  Live configuration — read directly from server <code className="text-indigo-400">provider-manager.js</code>
-                </p>
-                {['router', 'builder', 'reviewer'].map((role) => {
-                  const agent = config[role];
-                  const badgeClass = PROVIDER_BADGE_COLORS[agent.provider] || 'bg-slate-500/20 text-slate-300 border-slate-500/30';
-                  return (
-                    <div
-                      key={role}
-                      className="p-4 rounded-xl bg-slate-950/60 border border-white/10 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-semibold text-slate-100">{AGENT_LABELS[role]}</span>
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${badgeClass}`}>
-                          {agent.providerLabel}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
-                        <span className="font-mono text-indigo-300">{agent.modelLabel}</span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 leading-relaxed">{AGENT_DESCRIPTIONS[role]}</p>
-                    </div>
-                  );
-                })}
-
-                <div className="mt-3 p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-[11px] text-indigo-300 leading-relaxed">
-                  💡 To change providers or models, update <code className="font-mono">BUILDER_PROVIDER</code>, <code className="font-mono">ROUTER_PROVIDER</code>, and <code className="font-mono">REVIEWER_PROVIDER</code> in your <code className="font-mono">.env</code> file and restart the server.
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Tab 3: About Loom */}
-        {activeTab === 'about' && (
-          <div className="space-y-3 text-xs text-slate-300">
-            <div className="flex items-center gap-3">
-              <LoomLogo size="md" />
-              <span className="text-slate-400">v1.0.0 (Hackathon MVP)</span>
-            </div>
-            <p className="leading-relaxed text-slate-400">
-              Loom AI is a specialized frontend development assistant designed specifically for students and beginner developers. Supports generation, explanation, and debugging across <strong>Vanilla HTML/CSS/JS</strong> and <strong>React + Tailwind CSS</strong> stacks.
-            </p>
-            <div className="p-3 rounded-xl bg-slate-950/60 border border-white/10 space-y-1">
-              <div className="font-semibold text-slate-300 mb-2">Architecture</div>
-              <div className="text-slate-500 space-y-1">
-                <div>🔀 <span className="text-slate-400">Router</span> — intent classification</div>
-                <div>🏗 <span className="text-slate-400">Builder</span> — code generation per stack</div>
-                <div>🔍 <span className="text-slate-400">Reviewer</span> — quality validation, 1 retry</div>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-white/10">
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
           <button
             onClick={() => setIsSettingsModalOpen(false)}
-            className="px-4 py-2 text-sm font-medium rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/25 hover:brightness-110 transition-all duration-200"
+            className="px-4 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/25 hover:brightness-110 transition-all duration-200"
           >
             Close
           </button>

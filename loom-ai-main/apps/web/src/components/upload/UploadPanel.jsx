@@ -3,7 +3,7 @@
  * @description Drag & drop project upload modal UI with upload progress indicators, stack auto-detection, and file validation placeholders.
  */
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { UploadCloud, CheckCircle, FileText, AlertCircle } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
@@ -14,7 +14,7 @@ import { useChat } from '../../contexts/ChatContext';
 import { uploadProject } from '../../lib/apiClient';
 
 export function UploadPanel() {
-  const { isUploadModalOpen, setIsUploadModalOpen, showToast, setViewMode } = useUI();
+  const { isUploadModalOpen, setIsUploadModalOpen, showToast, shouldAutoTriggerFileSelect, setShouldAutoTriggerFileSelect } = useUI();
   const { setActiveStack, setFiles } = useProject();
   const { setActiveProjectId } = useChat();
   const [dragActive, setDragActive] = useState(false);
@@ -22,6 +22,19 @@ export function UploadPanel() {
   const [detectedStack, setDetectedStack] = useState('auto');
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef(null);
+
+  // Auto-trigger file dialog if flagged from the + button in prompt box
+  useEffect(() => {
+    if (isUploadModalOpen && shouldAutoTriggerFileSelect) {
+      const timer = setTimeout(() => {
+        if (fileInputRef.current) {
+          fileInputRef.current.click();
+        }
+        setShouldAutoTriggerFileSelect(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isUploadModalOpen, shouldAutoTriggerFileSelect, setShouldAutoTriggerFileSelect]);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -112,7 +125,6 @@ export function UploadPanel() {
       setFiles(response.data.files);
       setActiveProjectId(response.data.projectId);
       setIsUploadModalOpen(false);
-      setViewMode('workspace');
       showToast(response.data.message, 'success');
       
       // Reset selected files

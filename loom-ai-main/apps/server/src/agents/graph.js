@@ -112,6 +112,26 @@ async function debugNode(state) {
  * Node returning static off-topic gate redirect message.
  */
 async function offTopicNode(state) {
+  const prompt = (state.prompt || '').trim().toLowerCase().replace(/[?,.!]/g, '');
+  
+  const greetings = [
+    'hi', 'hello', 'hey', 'yo', 'greetings', 'hola', 'good morning', 'good afternoon', 'good evening',
+    'how are you', 'hows it going', 'how are you doing', 'how goes it',
+    'who are you', 'whats your name', 'what is your name'
+  ];
+
+  const isGreetingOrIntro = greetings.some(g => 
+    prompt === g || 
+    prompt.startsWith(g + ' ')
+  );
+
+  if (isGreetingOrIntro) {
+    return {
+      ...state,
+      explanation: "Hello! I'm **Loom AI**, your frontend development assistant. I'm doing great! I can help you generate web projects, explain how files/components work, or find and debug layout issues in HTML, CSS, JavaScript, and React. What would you like to build today?"
+    };
+  }
+
   return {
     ...state,
     explanation: "I am focused strictly on frontend web development (HTML, CSS, JS, React, Tailwind). Try asking me to build a site, explain some code, or find and fix a bug!"

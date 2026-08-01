@@ -80,7 +80,7 @@ export function PreviewPane() {
 
     previewWindow.document.write('<!doctype html><title>Loom Preview</title><style>html,body,iframe{width:100%;height:100%;margin:0;border:0}</style><iframe sandbox="allow-scripts" title="Loom Preview"></iframe>');
     previewWindow.document.close();
-    previewWindow.document.querySelector('iframe').srcdoc = createVanillaPreviewDocument(files);
+    previewWindow.document.querySelector('iframe').srcdoc = createVanillaPreviewDocument(files, activeFileName);
   };
 
   useEffect(() => {
@@ -142,7 +142,7 @@ export function PreviewPane() {
           ) : activeTab === 'preview' ? (
             <div key={refreshKey} className={`transition-all duration-300 ${deviceWidthClasses[devicePreviewMode]}`}>
               {activeStack === 'vanilla' ? (
-                <VanillaPreview files={files} />
+                <VanillaPreview files={files} activeFileName={activeFileName} />
               ) : (
                 <ReactTailwindPreview files={files} />
               )}

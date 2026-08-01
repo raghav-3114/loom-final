@@ -36,16 +36,16 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = 'max-w-xl' 
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
-        className={`relative w-full ${maxWidth} bg-slate-900 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-10 animate-fade-in`}
+        className={`relative w-full ${maxWidth} modal-shell rounded-2xl shadow-2xl overflow-hidden z-10 animate-fade-in`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-slate-950/40">
-          <h2 id="modal-title" className="text-lg font-semibold text-white tracking-wide">
+        <div className="flex items-center justify-between px-6 py-4 modal-header-shell border-b border-[var(--border-subtle)]">
+          <h2 id="modal-title" className="text-lg font-semibold text-[var(--text-primary)] tracking-wide">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/10 rounded-lg transition-colors"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />

@@ -1,123 +1,87 @@
 /**
  * @file LoomLogo.jsx
- * @description Redesigned blocky, geometric, pixel-grid style monospace wordmark for LOOM.
- * Features customizable sizes, glowing active pixel blocks, and subtle inactive pixel indentations.
+ * @description Canvas-based Loom logo that loads the exact reference logo image,
+ * strips its background to transparent, and paints the text pixels with
+ * the app's purple-to-blue gradient.
  */
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 
-/**
- * LoomLogo component
- * @param {Object} props
- * @param {'sm'|'md'|'lg'|'xl'} [props.size='md'] - Logo scale
- * @param {string} [props.className=''] - Additional CSS classes
- */
+const SIZES = {
+  sm: { height: 28 },
+  md: { height: 40 },
+  lg: { height: 56 },
+  xl: { height: 96 },
+  hero: { height: 160 },
+};
+
+// Gradient colors: purple → blue
+const GRADIENT_START = { r: 139, g: 92, b: 246 }; // #8b5cf6
+const GRADIENT_END   = { r: 59,  g: 130, b: 241 }; // #3b82f1
+
+function lerp(a, b, t) {
+  return Math.round(a + (b - a) * t);
+}
+
 export function LoomLogo({ size = 'md', className = '' }) {
-  // 5x5 Grid matrix for each letter in L-O-O-M
-  const letters = [
-    // L
-    [
-      [1, 0, 0, 0, 0],
-      [1, 0, 0, 0, 0],
-      [1, 0, 0, 0, 0],
-      [1, 0, 0, 0, 0],
-      [1, 1, 1, 1, 1]
-    ],
-    // O
-    [
-      [1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1]
-    ],
-    // O
-    [
-      [1, 1, 1, 1, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 1, 1, 1, 1]
-    ],
-    // M
-    [
-      [1, 0, 0, 0, 1],
-      [1, 1, 0, 1, 1],
-      [1, 0, 1, 0, 1],
-      [1, 0, 0, 0, 1],
-      [1, 0, 0, 0, 1]
-    ]
-  ];
+  const canvasRef = useRef(null);
+  const { height } = SIZES[size] || SIZES.md;
 
-  const sizeStyles = {
-    sm: 'h-6 w-auto',
-    md: 'h-10 w-auto',
-    lg: 'h-16 w-auto',
-    xl: 'h-24 w-auto',
-  };
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
 
-  const selectedSize = sizeStyles[size] || sizeStyles.md;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.src = '/logo-loom.png';
+
+    img.onload = () => {
+      const scale = height / img.height;
+      const w = Math.round(img.width * scale);
+      const h = height;
+
+      canvas.width = w;
+      canvas.height = h;
+
+      ctx.drawImage(img, 0, 0, w, h);
+      const imageData = ctx.getImageData(0, 0, w, h);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i], g = data[i + 1], b = data[i + 2];
+        const brightness = (r + g + b) / 3;
+
+        if (brightness < 120) {
+          // Dark pixel → text: paint with gradient colour based on x
+          const px = (i / 4) % w;
+          const t = px / w;
+          data[i]     = lerp(GRADIENT_START.r, GRADIENT_END.r, t);
+          data[i + 1] = lerp(GRADIENT_START.g, GRADIENT_END.g, t);
+          data[i + 2] = lerp(GRADIENT_START.b, GRADIENT_END.b, t);
+          // Use inverse brightness as alpha for smooth edges
+          data[i + 3] = Math.min(255, Math.round((1 - brightness / 120) * 255 * 1.5));
+        } else {
+          // Light pixel → background: make fully transparent
+          data[i + 3] = 0;
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    };
+  }, [height]);
 
   return (
-    <div className={`inline-flex items-center select-none ${className}`} aria-label="LOOM AI Logo">
-      <svg
-        viewBox="0 0 166 34"
-        className={`${selectedSize} transition-all duration-300`}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <defs>
-          <linearGradient id="pixel-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#ffffff" />
-            <stop offset="50%" stopColor="#c7d2fe" /> {/* indigo-200 */}
-            <stop offset="100%" stopColor="#818cf8" /> {/* indigo-400 */}
-          </linearGradient>
-          <filter id="pixel-glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="1.5" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
-
-        {letters.map((matrix, lIdx) => {
-          const xOffset = lIdx * 44; // 34px width + 10px spacing
-          return (
-            <g key={lIdx}>
-              {matrix.map((row, rIdx) => {
-                const y = rIdx * 7; // 6px size + 1px gap
-                return row.map((pixel, cIdx) => {
-                  const x = xOffset + cIdx * 7; // 6px size + 1px gap
-                  
-                  if (pixel === 1) {
-                    return (
-                      <rect
-                        key={`${rIdx}-${cIdx}`}
-                        x={x}
-                        y={y}
-                        width={6}
-                        height={6}
-                        fill="url(#pixel-grad)"
-                        filter="url(#pixel-glow)"
-                        className="transition-all duration-300 hover:fill-indigo-300"
-                      />
-                    );
-                  } else {
-                    return (
-                      <rect
-                        key={`${rIdx}-${cIdx}`}
-                        x={x}
-                        y={y}
-                        width={6}
-                        height={6}
-                        fill="rgba(255, 255, 255, 0.04)"
-                      />
-                    );
-                  }
-                });
-              })}
-            </g>
-          );
-        })}
-      </svg>
-    </div>
+    <span
+      className={`inline-flex items-center select-none pl-3 ${className}`}
+      aria-label="loom"
+    >
+      <canvas
+        ref={canvasRef}
+        style={{ height: `${height}px`, width: 'auto' }}
+        className="pointer-events-none"
+      />
+    </span>
   );
 }
 

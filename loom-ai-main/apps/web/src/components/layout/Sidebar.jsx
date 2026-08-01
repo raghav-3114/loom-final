@@ -11,7 +11,7 @@ import { useUI } from '../../contexts/UIContext';
 import { useChat } from '../../contexts/ChatContext';
 
 export function Sidebar() {
-  const { sidebarCollapsed, toggleSidebar, setIsSettingsModalOpen } = useUI();
+  const { sidebarCollapsed, toggleSidebar, setIsSettingsModalOpen, showToast } = useUI();
   const { startNewChat, loadConversation, activeProjectId, conversationVersion } = useChat();
   const [conversations, setConversations] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,6 +46,47 @@ export function Sidebar() {
     }
   };
 
+  const handleRenameConversation = async (projectId, newName) => {
+    try {
+      const response = await fetch(`/api/conversations/${projectId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName }),
+      });
+      const body = await response.json();
+      if (response.ok && body.success) {
+        showToast('Chat renamed successfully', 'success');
+        refreshConversations();
+      } else {
+        showToast(body.error || 'Failed to rename chat', 'warning');
+      }
+    } catch (error) {
+      console.error('[Sidebar] Failed to rename conversation:', error);
+      showToast('Failed to rename chat', 'warning');
+    }
+  };
+
+  const handleDeleteConversation = async (projectId) => {
+    try {
+      const response = await fetch(`/api/conversations/${projectId}`, {
+        method: 'DELETE',
+      });
+      const body = await response.json();
+      if (response.ok && body.success) {
+        showToast('Chat deleted successfully', 'success');
+        refreshConversations();
+        if (projectId === activeProjectId) {
+          await startNewChat();
+        }
+      } else {
+        showToast(body.error || 'Failed to delete chat', 'warning');
+      }
+    } catch (error) {
+      console.error('[Sidebar] Failed to delete conversation:', error);
+      showToast('Failed to delete chat', 'warning');
+    }
+  };
+
   const groupedConversations = useMemo(() => {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -69,8 +110,8 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`h-full bg-[#0a0a0a]/95 border-r border-white/5 flex flex-col justify-between transition-all duration-300 backdrop-blur-2xl z-20 ${
-        sidebarCollapsed ? 'w-16' : 'w-64'
+      className={`fixed top-0 bottom-0 left-0 w-64 sidebar-shell flex flex-col justify-between transition-transform duration-300 ease-in-out backdrop-blur-2xl z-20 border-r border-[var(--border-subtle)] ${
+        sidebarCollapsed ? '-translate-x-full' : 'translate-x-0'
       }`}
     >
       {/* Top Header & Logo */}
@@ -79,7 +120,7 @@ export function Sidebar() {
           {!sidebarCollapsed && <LoomLogo size="md" />}
           <button
             onClick={toggleSidebar}
-            className="p-1.5 text-zinc-500 hover:text-zinc-200 hover:bg-white/5 rounded-xl transition-colors"
+            className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/5 rounded-xl transition-colors"
             title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -91,7 +132,7 @@ export function Sidebar() {
         <div className="px-3 py-2">
           <button
             onClick={handleNewChat}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/5 transition-all font-display font-medium text-xs shadow-sm ${
+            className={`w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-black/5 hover:bg-black/15 theme-dark:bg-white/5 theme-dark:hover:bg-white/15 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-black/5 theme-dark:border-white/5 hover:border-black/10 theme-dark:hover:border-white/10 transition-all font-display font-medium text-xs shadow-sm ${
               sidebarCollapsed ? 'px-2' : ''
             }`}
           >
@@ -103,19 +144,19 @@ export function Sidebar() {
         {/* Navigation Sections */}
         {!sidebarCollapsed && (
           <div className="px-3 py-3 space-y-4 overflow-y-auto max-h-[calc(100vh-220px)] custom-scrollbar">
-            <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/5 bg-white/[0.03] text-zinc-500 focus-within:border-indigo-500/50">
+            <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-black/5 theme-dark:border-white/5 bg-black/[0.02] theme-dark:bg-white/[0.03] text-[var(--text-muted)] hover:bg-black/[0.08] theme-dark:hover:bg-white/[0.08] hover:border-black/10 theme-dark:hover:border-white/10 transition-all focus-within:border-indigo-500/50">
               <Search className="w-3.5 h-3.5" />
               <input
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
                 placeholder="Search projects"
-                className="w-full bg-transparent text-xs text-zinc-200 placeholder:text-zinc-600 outline-none"
+                className="w-full bg-transparent text-xs text-[var(--text-primary)] placeholder-[var(--text-muted)] outline-none"
               />
             </label>
 
             {Object.entries(groupedConversations).map(([group, items]) => (
               <div className="space-y-1" key={group}>
-                <div className="px-3 text-[10px] font-display font-semibold text-zinc-500 uppercase tracking-wider mb-2">
+                <div className="px-3 text-[10px] font-display font-semibold text-[var(--text-muted)] uppercase tracking-wider mb-2">
                   {group}
                 </div>
                 {items.map((conversation) => (
@@ -126,6 +167,8 @@ export function Sidebar() {
                     badge={conversation.status === 'building' ? 'Building' : conversation.status === 'error' ? 'Error' : undefined}
                     isActive={conversation.id === activeProjectId}
                     onClick={() => handleConversationClick(conversation.id)}
+                    onRename={(newName) => handleRenameConversation(conversation.id, newName)}
+                    onDelete={() => handleDeleteConversation(conversation.id)}
                   />
                 ))}
               </div>

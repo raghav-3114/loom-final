@@ -6,7 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const Database = require('better-sqlite3');
+const Database = require('./better-sqlite3-mock');
 const { validateEnv } = require('../config/env');
 const { logger } = require('../utils/logger');
 

@@ -1,16 +1,39 @@
 /**
  * @file UIContext.jsx
  * @description Centralized context for Loom AI UI state management.
- * Manages view mode (landing vs workspace), sidebar state, modal visibility, device preview mode, and toasts.
+ * Manages theme, sidebar state, modal visibility, device preview mode, and toasts.
  */
 
-import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo, useLayoutEffect, useEffect } from 'react';
 
 const UIContext = createContext(null);
 
+const THEME_STORAGE_KEY = 'loom-theme';
+const THEME_CLASSES = ['theme-dark', 'theme-light', 'theme-midnight'];
+const VALID_THEMES = ['dark', 'light', 'midnight', 'system'];
+
+function getStoredTheme() {
+  if (typeof window === 'undefined') return 'dark';
+  const stored = localStorage.getItem(THEME_STORAGE_KEY);
+  return VALID_THEMES.includes(stored) ? stored : 'dark';
+}
+
+function resolveActiveTheme(theme) {
+  if (theme === 'system') {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  return theme;
+}
+
+function applyThemeClass(theme) {
+  const root = document.documentElement;
+  const active = resolveActiveTheme(theme);
+  THEME_CLASSES.forEach((cls) => root.classList.remove(cls));
+  root.classList.add(`theme-${active}`);
+}
+
 export function UIProvider({ children }) {
-  // 'landing' or 'workspace'
-  const [viewMode, setViewMode] = useState('landing');
+  const [theme, setThemeState] = useState(getStoredTheme);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
@@ -18,8 +41,42 @@ export function UIProvider({ children }) {
   const [devicePreviewMode, setDevicePreviewMode] = useState('desktop');
   const [toastMessage, setToastMessage] = useState(null);
 
-  // Stable across renders (only calls stable useState setters) — safe to
-  // memoize unconditionally so consumers never see a new function identity.
+  const setTheme = useCallback((nextTheme) => {
+    if (!VALID_THEMES.includes(nextTheme)) return;
+    setThemeState(nextTheme);
+    localStorage.setItem(THEME_STORAGE_KEY, nextTheme);
+  }, []);
+
+  // Apply theme class before paint and whenever preference changes
+  useLayoutEffect(() => {
+    applyThemeClass(theme);
+  }, [theme]);
+
+  // Re-resolve when OS color scheme changes while 'system' is selected
+  useEffect(() => {
+    if (theme !== 'system') return undefined;
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      console.log('[UIContext] System theme color scheme changed.');
+      applyThemeClass('system');
+    };
+
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange);
+    } else {
+      mediaQuery.addListener(handleChange);
+    }
+
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleChange);
+      } else {
+        mediaQuery.removeListener(handleChange);
+      }
+    };
+  }, [theme]);
+
   const showToast = useCallback((message, type = 'info') => {
     setToastMessage({ message, type, id: Date.now() });
     setTimeout(() => {
@@ -29,14 +86,9 @@ export function UIProvider({ children }) {
 
   const toggleSidebar = useCallback(() => setSidebarCollapsed((prev) => !prev), []);
 
-  // Memoized so the context value only changes reference when the actual UI
-  // state changes — otherwise every consumer (e.g. the Live Preview, which
-  // only cares about devicePreviewMode) re-renders whenever ANY unrelated UI
-  // toggle fires elsewhere in the app (sidebar, modals, toasts), cascading
-  // into anything downstream that isn't memoized.
   const value = useMemo(() => ({
-    viewMode,
-    setViewMode,
+    theme,
+    setTheme,
     sidebarCollapsed,
     setSidebarCollapsed,
     toggleSidebar,
@@ -48,7 +100,7 @@ export function UIProvider({ children }) {
     setDevicePreviewMode,
     toastMessage,
     showToast,
-  }), [viewMode, sidebarCollapsed, toggleSidebar, isUploadModalOpen, isSettingsModalOpen, devicePreviewMode, toastMessage, showToast]);
+  }), [theme, setTheme, sidebarCollapsed, toggleSidebar, isUploadModalOpen, isSettingsModalOpen, devicePreviewMode, toastMessage, showToast]);
 
   return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
 }

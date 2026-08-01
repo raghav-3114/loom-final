@@ -103,7 +103,7 @@ function listConversations() {
     SELECT p.id, p.name, p.stack, p.status, p.last_message, p.created_at, p.updated_at
     FROM projects p
     INNER JOIN sessions s ON s.project_id = p.id
-    WHERE p.archived = 0
+    WHERE p.archived = 0 AND p.status != 'draft'
     ORDER BY p.updated_at DESC, p.created_at DESC
   `).all();
 }

@@ -13,7 +13,7 @@ import { useChat } from '../../contexts/ChatContext';
 import { useProject } from '../../contexts/ProjectContext';
 
 export function LandingView() {
-  const { setViewMode, setIsUploadModalOpen } = useUI();
+  const { setIsUploadModalOpen } = useUI();
   const { sendMessage, setPromptText, promptText } = useChat();
   const { activeStack } = useProject();
 
@@ -31,7 +31,6 @@ export function LandingView() {
   const handleGenerate = () => {
     if (!promptText.trim()) return;
     sendMessage(promptText, activeStack);
-    setViewMode('workspace');
   };
 
   return (
