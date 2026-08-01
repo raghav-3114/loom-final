@@ -118,35 +118,33 @@ export function Sidebar() {
         ${sidebarCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-64 opacity-100'}
       `}
     >
-      {/* Top Header & Logo */}
-      <div>
-        <div className={`p-4 flex items-center ${sidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
-          {!sidebarCollapsed && <LoomLogo size="md" />}
-          <button
-            onClick={toggleSidebar}
-            className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/5 rounded-xl transition-colors"
-            title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
-        </div>
+      <div className="w-64 h-full flex flex-col justify-between shrink-0 overflow-hidden">
+        {/* Top Header & Logo */}
+        <div>
+          <div className="p-4 flex items-center justify-between">
+            <LoomLogo size="md" />
+            <button
+              onClick={toggleSidebar}
+              className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/5 rounded-xl transition-colors"
+              title="Collapse sidebar"
+              aria-label="Collapse sidebar"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          </div>
 
-        {/* New Chat CTA */}
-        <div className="px-3 py-2">
-          <button
-            onClick={handleNewChat}
-            className={`w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-black/5 hover:bg-black/15 theme-dark:bg-white/5 theme-dark:hover:bg-white/15 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-black/5 theme-dark:border-white/5 hover:border-black/10 theme-dark:hover:border-white/10 transition-all font-display font-medium text-xs shadow-sm ${
-              sidebarCollapsed ? 'px-2' : ''
-            }`}
-          >
-            <Plus className="w-4 h-4 shrink-0" />
-            {!sidebarCollapsed && <span>New Chat</span>}
-          </button>
-        </div>
+          {/* New Chat CTA */}
+          <div className="px-3 py-2">
+            <button
+              onClick={handleNewChat}
+              className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-black/5 hover:bg-black/15 theme-dark:bg-white/5 theme-dark:hover:bg-white/15 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-black/5 theme-dark:border-white/5 hover:border-black/10 theme-dark:hover:border-white/10 transition-all font-display font-medium text-xs shadow-sm"
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>New Chat</span>
+            </button>
+          </div>
 
-        {/* Navigation Sections */}
-        {!sidebarCollapsed && (
+          {/* Navigation Sections */}
           <div className="px-3 py-3 space-y-4 overflow-y-auto max-h-[calc(100vh-220px)] custom-scrollbar">
             <label className="flex items-center gap-2 px-3 py-2 rounded-xl border border-black/5 theme-dark:border-white/5 bg-black/[0.02] theme-dark:bg-white/[0.03] text-[var(--text-muted)] hover:bg-black/[0.08] theme-dark:hover:bg-white/[0.08] hover:border-black/10 theme-dark:hover:border-white/10 transition-all focus-within:border-indigo-500/50">
               <Search className="w-3.5 h-3.5" />
@@ -178,17 +176,16 @@ export function Sidebar() {
               </div>
             ))}
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Footer Settings */}
-      <div className="p-3 border-t border-white/5">
-        <SidebarItem
-          icon={Settings}
-          label="Settings"
-          collapsed={sidebarCollapsed}
-          onClick={() => setIsSettingsModalOpen(true)}
-        />
+        {/* Footer Settings */}
+        <div className="p-3 border-t border-white/5">
+          <SidebarItem
+            icon={Settings}
+            label="Settings"
+            onClick={() => setIsSettingsModalOpen(true)}
+          />
+        </div>
       </div>
     </aside>
   );
