@@ -4,20 +4,22 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronRight, Settings } from 'lucide-react';
+import { ChevronRight, Settings, Plus } from 'lucide-react';
 import Sidebar from '../layout/Sidebar';
 import ChatPanel from '../chat/ChatPanel';
 import PreviewPane from '../preview/PreviewPane';
 import { useProject } from '../../contexts/ProjectContext';
 import { useUI } from '../../contexts/UIContext';
+import { useChat } from '../../contexts/ChatContext';
 
 export function ChatWorkspace() {
   const { files } = useProject();
   const { sidebarCollapsed, toggleSidebar, setIsSettingsModalOpen } = useUI();
+  const { startNewChat } = useChat();
   const hasProjectFiles = Object.keys(files).length > 0;
-  const [previewWidth, setPreviewWidth] = useState(50); // percentage
+  const [previewWidth, setPreviewWidth] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
-  const [isToggleHovered, setIsToggleHovered] = useState(false);
+  const [previewVisible, setPreviewVisible] = useState(true);
 
   const handleMouseDown = (e) => {
     e.preventDefault();
@@ -40,33 +42,26 @@ export function ChatWorkspace() {
   };
 
   return (
-    <div className="h-screen w-screen flex overflow-hidden app-shell text-zinc-100 select-none font-sans relative">
-      {/* Floating Sidebar Toggle Button — shows "l" logo mark, arrow on hover */}
+    <div className="h-screen w-screen flex overflow-hidden app-shell text-zinc-100 font-sans relative">
+      {/* Floating Sidebar Toggle Button — normal arrow icon when sidebar is collapsed */}
       {sidebarCollapsed && (
         <button
           onClick={toggleSidebar}
-          onMouseEnter={() => setIsToggleHovered(true)}
-          onMouseLeave={() => setIsToggleHovered(false)}
-          className="fixed top-4 left-4 z-40 p-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] backdrop-blur-xl shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer"
-          title="Open Sidebar"
+          className="fixed top-4 left-4 z-40 p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] backdrop-blur-xl shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+          title="Expand Sidebar"
         >
-          <div className="w-6 h-6 flex items-center justify-center relative">
-            {/* Gradient "l" letter */}
-            <span
-              className={`absolute inset-0 flex items-center justify-center text-xl font-bold bg-gradient-to-r from-purple-500 to-blue-500 bg-clip-text text-transparent transition-all duration-200 ease-in-out ${
-                isToggleHovered ? 'opacity-0 scale-75' : 'opacity-100 scale-100'
-              }`}
-              style={{ fontFamily: 'var(--font-handwriting, cursive)', lineHeight: 1 }}
-            >
-              l
-            </span>
-            {/* Arrow icon */}
-            <ChevronRight
-              className={`w-5 h-5 absolute text-[var(--text-secondary)] transition-all duration-200 ease-in-out ${
-                isToggleHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-75'
-              }`}
-            />
-          </div>
+          <ChevronRight className="w-5 h-5" />
+        </button>
+      )}
+
+      {/* Floating New Chat Button — shown right below the sidebar toggle when collapsed */}
+      {sidebarCollapsed && (
+        <button
+          onClick={startNewChat}
+          className="fixed top-16 left-4 z-40 p-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] backdrop-blur-xl shadow-lg hover:scale-105 active:scale-95 transition-all cursor-pointer flex items-center justify-center"
+          title="New Chat"
+        >
+          <Plus className="w-5 h-5" />
         </button>
       )}
 
@@ -95,24 +90,35 @@ export function ChatWorkspace() {
         <ChatPanel />
       </div>
 
-      {hasProjectFiles && (
+      {hasProjectFiles && previewVisible && (
         <>
           {/* Resizable Drag Splitter Handle */}
           <div
             onMouseDown={handleMouseDown}
-            className={`w-1.5 h-full bg-[#111111] hover:bg-indigo-500/50 cursor-col-resize flex items-center justify-center transition-colors z-30 ${
+            className={`w-1 h-full bg-[var(--border-subtle)] hover:bg-indigo-500/50 cursor-col-resize flex items-center justify-center transition-colors z-30 ${
               isDragging ? 'bg-indigo-500 shadow-[0_0_12px_#6366f1]' : ''
             }`}
-            title="Drag to resize Live Preview panel"
+            title="Drag to resize Preview panel"
           >
-            <div className="w-0.5 h-8 rounded-full bg-white/20" />
+            <div className="w-0.5 h-8 rounded-full bg-black/10 theme-dark:bg-white/20" />
           </div>
 
-          {/* Right Live Preview Panel */}
+          {/* Right Preview Panel */}
           <div className="h-full min-w-0" style={{ width: `${previewWidth}%` }}>
-            <PreviewPane />
+            <PreviewPane onClose={() => setPreviewVisible(false)} />
           </div>
         </>
+      )}
+
+      {/* Re-open preview button — shown when preview is closed */}
+      {hasProjectFiles && !previewVisible && (
+        <button
+          onClick={() => setPreviewVisible(true)}
+          className="fixed right-4 top-1/2 -translate-y-1/2 z-40 px-3 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-subtle)] backdrop-blur-xl shadow-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] text-xs font-medium transition-all hover:scale-105 cursor-pointer"
+          title="Show Preview"
+        >
+          Preview
+        </button>
       )}
     </div>
   );

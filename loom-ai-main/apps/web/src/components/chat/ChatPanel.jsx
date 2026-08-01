@@ -123,29 +123,34 @@ export function ChatPanel() {
           </div>
         </div>
       ) : (
-        /* Scrollable Conversation Stream */
-        <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-8 custom-scrollbar max-w-4xl mx-auto w-full relative z-10">
-          {messages.map((msg) => (
-            <MessageBubble
-              key={msg.id}
-              message={msg}
-              onRegenerate={msg.isError ? null : () => sendMessage(msg.content)}
-            />
-          ))}
+        /* Scrollable Conversation Stream — Claude style */
+        <div className="flex-1 overflow-y-auto py-6 custom-scrollbar max-w-3xl mx-auto w-full relative z-10 flex flex-col gap-6">
+          {messages.map((msg, idx) => {
+            // Only animate the very last assistant message
+            const isLatestAssistant =
+              msg.role === 'assistant' &&
+              idx === [...messages].map((m, i) => m.role === 'assistant' ? i : -1).filter(i => i >= 0).pop();
+            return (
+              <MessageBubble
+                key={msg.id}
+                message={msg}
+                isLatestAssistant={isLatestAssistant}
+                onRegenerate={msg.isError ? null : () => sendMessage(msg.content)}
+              />
+            );
+          })}
 
-          {/* Thinking / Streaming Indicator */}
+          {/* Thinking / Streaming Indicator — minimal dots */}
           {isGenerating && (
-            <div className="flex items-start gap-4 p-5 rounded-3xl bg-[var(--bg-card)] border border-[var(--border-subtle)] backdrop-blur-md shadow-xl animate-pulse relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
-              <div className="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400 mt-1 ring-1 ring-indigo-500/20 shadow-[0_0_20px_rgba(99,102,241,0.15)]">
-                <Bot className="w-5 h-5 animate-spin" />
-              </div>
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-2 font-display font-bold text-indigo-500 theme-dark:text-indigo-300 text-sm">
-                  <Sparkles className="w-4 h-4" />
-                  <span>Generating Intelligence...</span>
-                </div>
-                <p className="text-[13px] text-[var(--text-secondary)] font-mono tracking-wide leading-relaxed">{thinkingStep || 'Processing response...'}</p>
+            <div className="flex flex-col gap-1.5 px-4">
+              <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">loom</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0ms]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:150ms]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:300ms]" />
+                {thinkingStep && (
+                  <span className="text-xs text-[var(--text-muted)] ml-2 italic">{thinkingStep}</span>
+                )}
               </div>
             </div>
           )}

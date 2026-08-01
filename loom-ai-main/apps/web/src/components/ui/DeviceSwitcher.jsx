@@ -17,7 +17,7 @@ export function DeviceSwitcher() {
   ];
 
   return (
-    <div className="flex items-center bg-slate-950/80 p-0.5 rounded-xl border border-white/10">
+    <div className="flex items-center bg-black/5 theme-dark:bg-white/5 p-0.5 rounded-xl border border-[var(--border-subtle)]">
       {devices.map((device) => {
         const Icon = device.icon;
         const isActive = devicePreviewMode === device.id;
@@ -27,8 +27,8 @@ export function DeviceSwitcher() {
             onClick={() => setDevicePreviewMode(device.id)}
             className={`p-1.5 rounded-lg text-xs font-medium transition-all ${
               isActive
-                ? 'bg-indigo-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                ? 'bg-indigo-500 text-white shadow-sm'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/5'
             }`}
             title={`${device.label} View`}
             aria-label={`${device.label} View`}

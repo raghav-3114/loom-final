@@ -82,13 +82,13 @@
     },
     {
       "id": "proj-1785535683066-f37ad84d",
-      "name": "New Chat",
+      "name": "hi",
       "stack": "vanilla",
-      "status": "draft",
-      "last_message": "",
+      "status": "error",
+      "last_message": "Design planning failed: All configured AI providers failed. Last error: OpenRouter API Call Failed: OpenRouter returned an unspecified error.",
       "archived": 0,
       "created_at": "2026-07-31T22:08:03.066Z",
-      "updated_at": "2026-07-31T22:08:03.073Z"
+      "updated_at": "2026-08-01T01:19:30.970Z"
     },
     {
       "id": "proj-1785535695819-0cc55b32",

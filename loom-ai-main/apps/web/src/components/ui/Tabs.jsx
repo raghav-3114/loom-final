@@ -7,7 +7,7 @@ import React from 'react';
 
 export function Tabs({ tabs = [], activeTab, onChange, className = '' }) {
   return (
-    <div className={`flex items-center gap-1 p-1 bg-slate-950/60 rounded-xl border border-white/10 ${className}`}>
+    <div className={`flex items-center gap-1 p-1 bg-black/5 theme-dark:bg-white/5 rounded-xl border border-[var(--border-subtle)] ${className}`}>
       {tabs.map((tab) => {
         const isActive = activeTab === tab.id;
         return (
@@ -16,8 +16,8 @@ export function Tabs({ tabs = [], activeTab, onChange, className = '' }) {
             onClick={() => onChange(tab.id)}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-200 ${
               isActive
-                ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
+                ? 'bg-indigo-500 text-white shadow-sm'
+                : 'text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/5'
             }`}
           >
             {tab.label}

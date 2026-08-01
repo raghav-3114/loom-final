@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { ChevronRight } from 'lucide-react';
 import PreviewToolbar from '../ui/PreviewToolbar';
 import VanillaPreview, { createVanillaPreviewDocument } from './VanillaPreview';
 import ReactTailwindPreview from './ReactTailwindPreview';
@@ -13,12 +14,12 @@ import { useProject } from '../../contexts/ProjectContext';
 import { useUI } from '../../contexts/UIContext';
 import EmptyState from '../ui/EmptyState';
 
-export function PreviewPane() {
+export function PreviewPane({ onClose }) {
   const { activeStack, files, activeFileName, setActiveFileName } = useProject();
   const { devicePreviewMode } = useUI();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const [isTreeCollapsed, setIsTreeCollapsed] = useState(false);
+  const [isTreeCollapsed, setIsTreeCollapsed] = useState(true);
   const [activeTab, setActiveTab] = useState('preview');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -98,18 +99,19 @@ export function PreviewPane() {
   ];
 
   return (
-    <div className={`${isFullscreen ? 'fixed inset-0 z-[100] border-none' : 'h-full border-l'} flex flex-col bg-slate-950/90 border-white/10 overflow-hidden`}>
+    <div className={`${isFullscreen ? 'fixed inset-0 z-[100] border-none' : 'h-full border-l'} flex flex-col bg-[var(--bg-base)] border-[var(--border-subtle)] overflow-hidden`}>
       {/* Top Toolbar */}
       <PreviewToolbar
         onRefresh={() => setRefreshKey((k) => k + 1)}
         isFullscreen={isFullscreen}
         onToggleFullscreen={toggleFullscreen}
         onOpenFullPreview={openFullPreview}
+        onClose={onClose}
       />
 
       {/* View Tabs bar */}
       {hasGeneratedCode && !isFullscreen && (
-        <div className="px-4 py-2 border-b border-white/5 bg-slate-950/40 flex items-center justify-between">
+        <div className="px-4 py-2 border-b border-[var(--border-subtle)] bg-[var(--bg-card)] flex items-center justify-between">
           <Tabs tabs={viewTabs} activeTab={activeTab} onChange={setActiveTab} />
           {activeTab === 'code' && activeFileName && (
             <span className="text-[11px] text-slate-500 font-mono italic">
@@ -121,26 +123,40 @@ export function PreviewPane() {
 
       {/* Main Body - Project Tree & Viewport Split */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Project Tree Sidebar */}
+        {/* Project Tree Sidebar — slides in/out */}
         {hasGeneratedCode && !isFullscreen && (
-          <ProjectTree
-            files={files}
-            activeFileName={activeFileName}
-            onSelectFile={handleSelectFile}
-            isCollapsed={isTreeCollapsed}
-            onToggle={() => setIsTreeCollapsed(!isTreeCollapsed)}
-          />
+          <div className="relative flex h-full">
+            <ProjectTree
+              files={files}
+              activeFileName={activeFileName}
+              onSelectFile={handleSelectFile}
+              isCollapsed={isTreeCollapsed}
+              onToggle={() => setIsTreeCollapsed(!isTreeCollapsed)}
+            />
+            {/* Floating expand button when tree is collapsed */}
+            {isTreeCollapsed && (
+              <button
+                onClick={() => setIsTreeCollapsed(false)}
+                className="absolute top-3 left-2 z-10 p-1.5 rounded-lg bg-[var(--bg-card)] border border-[var(--border-subtle)] text-[var(--text-muted)] hover:text-[var(--text-primary)] shadow-sm transition-all hover:scale-105"
+                title="Expand file explorer"
+              >
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         )}
 
         {/* Viewport Area */}
-        <div className="flex-1 flex items-center justify-center p-4 bg-slate-900/40 relative overflow-hidden custom-scrollbar">
+        <div className="flex-1 flex items-center justify-center p-6 relative overflow-hidden custom-scrollbar"
+          style={{ background: 'var(--bg-base)', backgroundImage: 'radial-gradient(circle, var(--border-subtle) 1px, transparent 1px)', backgroundSize: '20px 20px' }}
+        >
           {!hasGeneratedCode ? (
             <EmptyState
               title="Live Preview Standby"
               description="Enter a prompt or choose a template to see your generated HTML/CSS/JS or React website render live."
             />
           ) : activeTab === 'preview' ? (
-            <div key={refreshKey} className={`transition-all duration-300 ${deviceWidthClasses[devicePreviewMode]}`}>
+            <div key={refreshKey} className={`transition-all duration-300 shadow-xl rounded-xl overflow-hidden ring-1 ring-black/5 ${deviceWidthClasses[devicePreviewMode]}`}>
               {activeStack === 'vanilla' ? (
                 <VanillaPreview files={files} activeFileName={activeFileName} />
               ) : (
@@ -148,7 +164,7 @@ export function PreviewPane() {
               )}
             </div>
           ) : (
-            <div className="w-full h-full p-4 overflow-auto bg-slate-950/60 font-mono text-xs text-slate-300 leading-relaxed custom-scrollbar rounded-xl border border-white/10 select-text">
+            <div className="w-full h-full p-4 overflow-auto bg-[var(--bg-card)] font-mono text-xs text-[var(--text-primary)] leading-relaxed custom-scrollbar rounded-xl border border-[var(--border-subtle)] select-text">
               <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/5 text-[11px] text-violet-400 font-medium">
                 <span>{activeFileName ? (activeFileName.startsWith('/') ? activeFileName.substring(1) : activeFileName) : '—'}</span>
                 <span className="text-[10px] text-slate-500 uppercase">{activeFileName ? activeFileName.split('.').pop() : ''} file</span>
