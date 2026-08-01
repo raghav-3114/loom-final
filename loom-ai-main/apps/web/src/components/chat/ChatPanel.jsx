@@ -22,7 +22,7 @@ export function ChatPanel() {
   const [showCursor, setShowCursor] = useState(true);
 
   const hasProjectFiles = Object.keys(files).length > 0;
-  const isLandingState = messages.length === 1 && !hasProjectFiles;
+  const isLandingState = messages.length === 0;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -124,38 +124,40 @@ export function ChatPanel() {
         </div>
       ) : (
         /* Scrollable Conversation Stream — Claude style */
-        <div className="flex-1 overflow-y-auto py-6 custom-scrollbar max-w-3xl mx-auto w-full relative z-10 flex flex-col gap-6">
-          {messages.map((msg, idx) => {
-            // Only animate the very last assistant message
-            const isLatestAssistant =
-              msg.role === 'assistant' &&
-              idx === [...messages].map((m, i) => m.role === 'assistant' ? i : -1).filter(i => i >= 0).pop();
-            return (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                isLatestAssistant={isLatestAssistant}
-                onRegenerate={msg.isError ? null : () => sendMessage(msg.content)}
-              />
-            );
-          })}
+        <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10 w-full">
+          <div className="max-w-3xl mx-auto py-6 flex flex-col gap-6 w-full">
+            {messages.map((msg, idx) => {
+              // Only animate the very last assistant message
+              const isLatestAssistant =
+                msg.role === 'assistant' &&
+                idx === [...messages].map((m, i) => m.role === 'assistant' ? i : -1).filter(i => i >= 0).pop();
+              return (
+                <MessageBubble
+                  key={msg.id}
+                  message={msg}
+                  isLatestAssistant={isLatestAssistant}
+                  onRegenerate={msg.isError ? null : () => sendMessage(msg.content)}
+                />
+              );
+            })}
 
-          {/* Thinking / Streaming Indicator — minimal dots */}
-          {isGenerating && (
-            <div className="flex flex-col gap-1.5 px-4">
-              <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">loom</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0ms]" />
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:150ms]" />
-                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:300ms]" />
-                {thinkingStep && (
-                  <span className="text-xs text-[var(--text-muted)] ml-2 italic">{thinkingStep}</span>
-                )}
+            {/* Thinking / Streaming Indicator — minimal dots */}
+            {isGenerating && (
+              <div className="flex flex-col gap-2 px-4 select-none">
+                <LoomLogo size="sm" className="pl-0 pointer-events-none" />
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:0ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:150ms]" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-bounce [animation-delay:300ms]" />
+                  {thinkingStep && (
+                    <span className="text-xs text-[var(--text-muted)] ml-2 italic">{thinkingStep}</span>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div ref={messagesEndRef} />
+            <div ref={messagesEndRef} />
+          </div>
         </div>
       )}
 

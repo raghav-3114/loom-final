@@ -8,6 +8,7 @@
 import React, { useEffect, useRef } from 'react';
 
 const SIZES = {
+  xs: { height: 16 },
   sm: { height: 28 },
   md: { height: 40 },
   lg: { height: 56 },
@@ -37,14 +38,26 @@ export function LoomLogo({ size = 'md', className = '' }) {
     img.src = '/logo-loom.png';
 
     img.onload = () => {
+      const dpr = window.devicePixelRatio || 1;
       const scale = height / img.height;
-      const w = Math.round(img.width * scale);
-      const h = height;
+      const logicalWidth = Math.round(img.width * scale);
+      const logicalHeight = height;
 
-      canvas.width = w;
-      canvas.height = h;
+      // Scale canvas internal resolution by device pixel ratio for ultra-sharpness
+      canvas.width = logicalWidth * dpr;
+      canvas.height = logicalHeight * dpr;
 
-      ctx.drawImage(img, 0, 0, w, h);
+      // Keep logical display dimensions via CSS styles
+      canvas.style.width = `${logicalWidth}px`;
+      canvas.style.height = `${logicalHeight}px`;
+
+      // Scale context to draw high-res image
+      ctx.scale(dpr, dpr);
+      ctx.drawImage(img, 0, 0, logicalWidth, logicalHeight);
+
+      // Process raw pixel values at high-res
+      const w = canvas.width;
+      const h = canvas.height;
       const imageData = ctx.getImageData(0, 0, w, h);
       const data = imageData.data;
 
@@ -52,19 +65,19 @@ export function LoomLogo({ size = 'md', className = '' }) {
         const r = data[i], g = data[i + 1], b = data[i + 2];
         const brightness = (r + g + b) / 3;
 
-        if (brightness < 120) {
-          // Dark pixel → text: paint with gradient colour based on x
-          const px = (i / 4) % w;
-          const t = px / w;
-          data[i]     = lerp(GRADIENT_START.r, GRADIENT_END.r, t);
-          data[i + 1] = lerp(GRADIENT_START.g, GRADIENT_END.g, t);
-          data[i + 2] = lerp(GRADIENT_START.b, GRADIENT_END.b, t);
-          // Use inverse brightness as alpha for smooth edges
-          data[i + 3] = Math.min(255, Math.round((1 - brightness / 120) * 255 * 1.5));
-        } else {
-          // Light pixel → background: make fully transparent
-          data[i + 3] = 0;
+        // Paint with brand gradient based on x position
+        const px = (i / 4) % w;
+        const t = px / w;
+        data[i]     = lerp(GRADIENT_START.r, GRADIENT_END.r, t);
+        data[i + 1] = lerp(GRADIENT_START.g, GRADIENT_END.g, t);
+        data[i + 2] = lerp(GRADIENT_START.b, GRADIENT_END.b, t);
+
+        // Smooth luminance-to-alpha mapping (fully transparent background, anti-aliased edges)
+        let alpha = 0;
+        if (brightness < 220) {
+          alpha = Math.min(255, Math.round((1 - brightness / 220) * 255 * 1.6));
         }
+        data[i + 3] = alpha;
       }
 
       ctx.putImageData(imageData, 0, 0);
@@ -73,7 +86,7 @@ export function LoomLogo({ size = 'md', className = '' }) {
 
   return (
     <span
-      className={`inline-flex items-center select-none pl-3 ${className}`}
+      className={`inline-flex items-center select-none ${className || 'pl-3'}`}
       aria-label="loom"
     >
       <canvas

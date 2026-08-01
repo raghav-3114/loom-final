@@ -6,9 +6,52 @@
  *  - Selectable, copyable text
  */
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { RefreshCw, XCircle } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { RefreshCw, XCircle, Copy, Check } from 'lucide-react';
 import CodeBlock from './CodeBlock';
+import LoomLogo from '../ui/LoomLogo';
+
+/* ─── Robust Time Formatter (hh:mm AM/PM) ─────────────────────────── */
+function formatTime(rawTimestamp) {
+  if (!rawTimestamp) return '';
+  
+  if (/^\d{2}:\d{2}\s(AM|PM)$/.test(rawTimestamp)) {
+    return rawTimestamp;
+  }
+
+  try {
+    const match = rawTimestamp.match(/(\d+):(\d+)(?::\d+)?\s*(am|pm|AM|PM)?/i);
+    if (match) {
+      let hours = parseInt(match[1], 10);
+      const minutes = match[2].padStart(2, '0');
+      let ampm = match[3] ? match[3].toUpperCase() : null;
+      
+      if (!ampm) {
+        ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12;
+        hours = hours ? hours : 12;
+      }
+      
+      const paddedHours = String(hours).padStart(2, '0');
+      return `${paddedHours}:${minutes} ${ampm}`;
+    }
+    
+    const parsedDate = new Date(rawTimestamp);
+    if (!isNaN(parsedDate.getTime())) {
+      let hours = parsedDate.getHours();
+      const minutes = String(parsedDate.getMinutes()).padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12;
+      hours = hours ? hours : 12;
+      const paddedHours = String(hours).padStart(2, '0');
+      return `${paddedHours}:${minutes} ${ampm}`;
+    }
+  } catch (err) {
+    console.error('[formatTime] Failed to parse timestamp:', rawTimestamp, err);
+  }
+
+  return rawTimestamp.toUpperCase();
+}
 
 /* ─── Lightweight Markdown → JSX renderer ─────────────────────────── */
 function renderMarkdown(text) {
@@ -25,6 +68,30 @@ function renderMarkdown(text) {
     if (line.trim() === '') {
       elements.push(<div key={`gap-${i}`} className="h-2" />);
       i++;
+      continue;
+    }
+
+    // Code block parser (lines starting with ```)
+    if (line.trim().startsWith('```')) {
+      const lang = line.trim().slice(3).trim();
+      const codeLines = [];
+      i++; // skip opening backticks
+      
+      while (i < lines.length && !lines[i].trim().startsWith('```')) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      
+      i++; // skip closing backticks
+      const codeText = codeLines.join('\n');
+      elements.push(
+        <CodeBlock
+          key={`code-block-${i}`}
+          code={codeText}
+          language={lang || 'txt'}
+          title={lang ? lang.toUpperCase() : 'CODE'}
+        />
+      );
       continue;
     }
 
@@ -156,6 +223,27 @@ function useTypewriter(fullText, enabled) {
 /* ─── Component ────────────────────────────────────────────────────── */
 export function MessageBubble({ message, onRegenerate, isLatestAssistant = false }) {
   const isUser = message.role === 'user';
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyBubble = () => {
+    let copyText = message.content || '';
+
+    // Append code card content formatted as standard markdown code blocks
+    if (message.codeCard && message.codeCard.code) {
+      const codeLang = message.codeCard.language || 'code';
+      copyText += `\n\n\`\`\`${codeLang}\n${message.codeCard.code}\n\`\`\``;
+    }
+
+    // Append explanation card details
+    if (message.explanationCard && message.explanationCard.details) {
+      const expTitle = message.explanationCard.title || 'Details';
+      copyText += `\n\n### ${expTitle}\n${message.explanationCard.details}`;
+    }
+
+    navigator.clipboard.writeText(copyText);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   // Typewriter only on the latest assistant message
   const { displayed, done } = useTypewriter(
@@ -173,8 +261,8 @@ export function MessageBubble({ message, onRegenerate, isLatestAssistant = false
             {message.content}
           </div>
           {message.timestamp && (
-            <div className="text-[11px] text-[var(--text-muted)] mt-1 text-right pr-1">
-              {message.timestamp}
+            <div className="text-[11px] text-[var(--text-muted)] mt-1 text-right pr-1 select-none">
+              {formatTime(message.timestamp)}
             </div>
           )}
         </div>
@@ -186,10 +274,10 @@ export function MessageBubble({ message, onRegenerate, isLatestAssistant = false
   return (
     <div className="flex flex-col gap-2 px-4 py-2 max-w-[90%] select-text">
       {/* Label row */}
-      <div className="flex items-center gap-2">
-        <span className="text-[11px] font-semibold text-[var(--text-muted)] uppercase tracking-wider">loom</span>
+      <div className="flex items-center gap-2.5 select-none">
+        <LoomLogo size="sm" className="pl-0" />
         {message.stack && (
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+          <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 theme-dark:text-indigo-300 border border-indigo-500/20 font-medium">
             {message.stack === 'vanilla' ? 'Vanilla' : 'React'}
           </span>
         )}
@@ -228,16 +316,39 @@ export function MessageBubble({ message, onRegenerate, isLatestAssistant = false
         </div>
       )}
 
-      {/* Regenerate */}
-      {!message.isError && done && (
-        <div className="mt-1">
-          <button
-            onClick={() => onRegenerate && onRegenerate(message.id)}
-            className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors"
-          >
-            <RefreshCw className="w-3 h-3" />
-            <span>Regenerate</span>
-          </button>
+      {/* Footer controls row: Timestamp & Actions (icons only) */}
+      {done && (
+        <div className="flex items-center gap-2.5 mt-1.5 text-[11px] text-[var(--text-muted)] select-none">
+          {message.timestamp && <span>{formatTime(message.timestamp)}</span>}
+          {message.timestamp && (!message.isError || onRegenerate) && <span className="text-slate-300 theme-dark:text-slate-700">•</span>}
+          
+          <div className="flex items-center gap-1.5">
+            {/* Copy Button Icon */}
+            <button
+              onClick={handleCopyBubble}
+              className="p-1 hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/5 rounded transition-all cursor-pointer flex items-center justify-center"
+              title={copied ? "Copied!" : "Copy response"}
+              aria-label="Copy response"
+            >
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-emerald-600 theme-dark:text-emerald-400 animate-fade-in" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+            </button>
+
+            {/* Regenerate Button Icon */}
+            {!message.isError && onRegenerate && (
+              <button
+                onClick={() => onRegenerate(message.id)}
+                className="p-1 hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/5 rounded transition-all cursor-pointer flex items-center justify-center"
+                title="Regenerate response"
+                aria-label="Regenerate response"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>

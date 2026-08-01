@@ -22,12 +22,6 @@ const THEME_OPTIONS = [
     accentClass: 'bg-gradient-to-br from-blue-400 via-indigo-400 to-indigo-300',
   },
   {
-    id: 'midnight',
-    label: 'Midnight',
-    previewClass: 'bg-[#02020f]',
-    accentClass: 'bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400',
-  },
-  {
     id: 'system',
     label: 'System',
     previewClass: 'bg-gradient-to-r from-[#020617] to-[#f8fafc]',
@@ -98,16 +92,6 @@ export function SettingsModal() {
               />
             ))}
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 pt-4 border-t border-[var(--border-subtle)]">
-          <button
-            onClick={() => setIsSettingsModalOpen(false)}
-            className="px-4 py-2 text-sm font-semibold rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 text-white shadow-lg shadow-indigo-500/25 hover:brightness-110 transition-all duration-200"
-          >
-            Close
-          </button>
         </div>
       </div>
     </Modal>

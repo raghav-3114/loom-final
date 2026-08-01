@@ -80,26 +80,6 @@
     --gradient-end: #3b82f6;
   }
 
-  /* theme-midnight — deep obsidian/navy, dark indigo borders, neon violet/cyan */
-  .theme-midnight {
-    --bg-base: #02020f;
-    --bg-dark: #02020f;
-    --bg-card: rgba(8, 8, 32, 0.65);
-    --bg-card-hover: rgba(15, 15, 48, 0.82);
-    --border-subtle: rgba(67, 56, 202, 0.22);
-    --border-glass: rgba(49, 46, 129, 0.35);
-    --border-glass-glow: rgba(139, 92, 246, 0.45);
-    --accent-purple: #a855f7;
-    --accent-blue: #38bdf8;
-    --accent-indigo: #818cf8;
-    --accent-cyan: #22d3ee;
-    --text-primary: #e0e7ff;
-    --text-secondary: #a5b4fc;
-    --text-muted: #6366f1;
-    --gradient-start: #a855f7;
-    --gradient-mid: #22d3ee;
-    --gradient-end: #6366f1;
-  }
 
   html {
     background-color: var(--bg-base);
@@ -210,16 +190,24 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(15, 15, 23, 0.5);
+  background: transparent;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 9999px;
 }
 
+.theme-light .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.35);
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(139, 92, 246, 0.4);
+  background: rgba(139, 92, 246, 0.5);
+}
+
+.theme-light .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.6);
 }
 
 .hide-scrollbar::-webkit-scrollbar {
@@ -286,7 +274,7 @@
   -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
   color: var(--text-primary) !important;
-  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+  transition: width 0.3s ease-in-out, opacity 0.3s ease-in-out, background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease !important;
 }
 
 .theme-light .sidebar-shell {
@@ -294,10 +282,6 @@
   border-right: 1px solid rgba(15, 23, 42, 0.08) !important;
 }
 
-.theme-midnight .sidebar-shell {
-  background-color: rgba(2, 2, 15, 0.4) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
-}
 
 .chat-panel-shell {
   background-color: var(--bg-base) !important;

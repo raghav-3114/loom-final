@@ -8,14 +8,7 @@ import { useProject } from './ProjectContext';
 
 const ChatContext = createContext(null);
 
-const INITIAL_MESSAGES = [
-  {
-    id: 'msg-1',
-    role: 'assistant',
-    content: "Hello! I'm **Loom AI**, your frontend development assistant. Enter a prompt or select a stack below to generate, explain, or debug HTML, CSS, JavaScript, or React code.",
-    timestamp: 'Just now',
-  },
-];
+const INITIAL_MESSAGES = [];
 
 export function ChatProvider({ children }) {
   const { setFiles, setProjectTitle, activeStack, setActiveStack, resetProject } = useProject();

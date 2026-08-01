@@ -11,6 +11,7 @@ const { createProject, getProjectById, updateProject, saveSession } = require('.
 const router = express.Router();
 
 router.post('/', async (req, res) => {
+  const startTime = new Date().toLocaleTimeString();
   const { prompt, stack, projectId: requestedProjectId } = req.body;
 
   if (!prompt || !stack) {
@@ -68,7 +69,7 @@ router.post('/', async (req, res) => {
 
     const dbState = JSON.stringify({
       messages: [
-        { id: `user-init`, role: 'user', content: prompt, stack, timestamp: new Date().toLocaleTimeString() },
+        { id: `user-init`, role: 'user', content: prompt, stack, timestamp: startTime },
         {
           id: `assistant-init`,
           role: 'assistant',

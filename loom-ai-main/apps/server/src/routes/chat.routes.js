@@ -11,6 +11,7 @@ const { getProjectById, getSessionById, updateProject, saveSession } = require('
 const router = express.Router();
 
 router.post('/', async (req, res) => {
+  const startTime = new Date().toLocaleTimeString();
   const { message, projectId, stack } = req.body;
 
   if (!message || !projectId) {
@@ -71,7 +72,7 @@ router.post('/', async (req, res) => {
     // Append to messages list
     const updatedMessages = [
       ...chatHistory,
-      { id: `user-${Date.now()}`, role: 'user', content: message, stack: project.stack, timestamp: new Date().toLocaleTimeString() },
+      { id: `user-${Date.now()}`, role: 'user', content: message, stack: project.stack, timestamp: startTime },
       {
         id: `assistant-${Date.now()}`,
         role: 'assistant',

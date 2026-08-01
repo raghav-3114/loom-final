@@ -9,8 +9,8 @@ import React, { createContext, useContext, useState, useCallback, useMemo, useLa
 const UIContext = createContext(null);
 
 const THEME_STORAGE_KEY = 'loom-theme';
-const THEME_CLASSES = ['theme-dark', 'theme-light', 'theme-midnight'];
-const VALID_THEMES = ['dark', 'light', 'midnight', 'system'];
+const THEME_CLASSES = ['theme-dark', 'theme-light'];
+const VALID_THEMES = ['dark', 'light', 'system'];
 
 function getStoredTheme() {
   if (typeof window === 'undefined') return 'dark';

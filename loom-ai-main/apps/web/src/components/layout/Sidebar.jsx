@@ -122,7 +122,14 @@ export function Sidebar() {
         {/* Top Header & Logo */}
         <div>
           <div className="p-4 flex items-center justify-between">
-            <LoomLogo size="md" />
+            <button
+              onClick={handleNewChat}
+              className="cursor-pointer hover:opacity-80 active:scale-95 transition-all focus:outline-none flex items-center pl-3"
+              title="Start a new chat"
+              aria-label="Start a new chat"
+            >
+              <LoomLogo size="md" className="pl-0" />
+            </button>
             <button
               onClick={toggleSidebar}
               className="p-1.5 text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:bg-black/5 theme-dark:hover:bg-white/5 rounded-xl transition-colors"

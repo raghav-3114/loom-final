@@ -80,7 +80,7 @@ export function ChatWorkspace() {
       <Sidebar />
 
       {/* Center Chat Workspace — transitions width naturally with flex layout */}
-      <div className="flex-1 h-full min-w-0 transition-all duration-300 ease-in-out">
+      <div className="flex-1 h-full min-w-0">
         <ChatPanel />
       </div>
 
