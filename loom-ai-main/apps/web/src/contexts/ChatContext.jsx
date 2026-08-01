@@ -239,6 +239,66 @@ export function ChatProvider({ children }) {
     return body.project.id;
   }, [resetProject]);
 
+  // Poll active project status if it is currently generating ('building')
+  useEffect(() => {
+    if (!activeProjectId) return;
+
+    let intervalId = null;
+
+    const checkStatus = async () => {
+      try {
+        const response = await fetch(`/api/conversations/${encodeURIComponent(activeProjectId)}`);
+        const body = await response.json();
+        if (response.ok && body.success) {
+          const { project, state } = body;
+          
+          if (project.status === 'building') {
+            setGeneratingProjects((current) => {
+              if (current[activeProjectId]) return current;
+              return { ...current, [activeProjectId]: true };
+            });
+            setThinkingSteps((current) => {
+              if (current[activeProjectId]) return current;
+              return { ...current, [activeProjectId]: 'AI is processing project generation in background...' };
+            });
+          } else {
+            // Completed or error state
+            setGeneratingProjects((current) => {
+              if (!current[activeProjectId]) return current;
+              return { ...current, [activeProjectId]: false };
+            });
+            setThinkingSteps((current) => {
+              if (!current[activeProjectId]) return current;
+              return { ...current, [activeProjectId]: null };
+            });
+
+            // Update files and messages with completed project state
+            setFiles(state.files || {});
+            setMessages(state.messages?.length ? state.messages : INITIAL_MESSAGES);
+            setConversationVersion((v) => v + 1);
+
+            if (intervalId) {
+              clearInterval(intervalId);
+              intervalId = null;
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[ChatContext] Polling status failed:', err);
+      }
+    };
+
+    // Run immediately when loaded/switched
+    checkStatus();
+
+    // Check status every 1.5 seconds
+    intervalId = setInterval(checkStatus, 1500);
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [activeProjectId, setFiles]);
+
   const loadConversation = useCallback(async (projectId) => {
     const response = await fetch(`/api/conversations/${encodeURIComponent(projectId)}`);
     const body = await response.json();
@@ -253,6 +313,15 @@ export function ChatProvider({ children }) {
     setProjectTitle(project.name);
     setFiles(state.files || {});
     setMessages(state.messages?.length ? state.messages : INITIAL_MESSAGES);
+
+    if (project.status === 'building') {
+      setGeneratingProjects((current) => ({ ...current, [projectId]: true }));
+      setThinkingSteps((current) => ({ ...current, [projectId]: 'AI is processing project generation in background...' }));
+    } else {
+      setGeneratingProjects((current) => ({ ...current, [projectId]: false }));
+      setThinkingSteps((current) => ({ ...current, [projectId]: null }));
+    }
+
     setActiveProjectId(project.id);
     setPromptText('');
   }, [setActiveStack, setFiles, setProjectTitle]);

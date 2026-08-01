@@ -80,7 +80,7 @@ export function SidebarItem({
           )}
           {!collapsed && <span className="truncate flex-1 pr-6 text-left">{label}</span>}
           {!collapsed && badge && (
-            <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-500/20 text-indigo-700 theme-dark:text-indigo-300 rounded-full border border-indigo-500/30">
+            <span className="px-1.5 py-0.5 text-[10px] font-semibold bg-indigo-500/20 text-indigo-700 theme-dark:text-indigo-300 rounded-full border border-indigo-500/30 group-hover/item:hidden transition-all shrink-0">
               {badge}
             </span>
           )}
