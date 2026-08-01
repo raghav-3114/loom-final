@@ -110,9 +110,13 @@ export function Sidebar() {
 
   return (
     <aside
-      className={`fixed top-0 bottom-0 left-0 w-64 sidebar-shell flex flex-col justify-between transition-transform duration-300 ease-in-out backdrop-blur-2xl z-20 border-r border-[var(--border-subtle)] ${
-        sidebarCollapsed ? '-translate-x-full' : 'translate-x-0'
-      }`}
+      className={`
+        h-full flex-shrink-0 overflow-hidden
+        sidebar-shell flex flex-col justify-between
+        backdrop-blur-2xl border-r border-[var(--border-subtle)]
+        transition-all duration-300 ease-in-out
+        ${sidebarCollapsed ? 'w-0 opacity-0 pointer-events-none' : 'w-64 opacity-100'}
+      `}
     >
       {/* Top Header & Logo */}
       <div>
